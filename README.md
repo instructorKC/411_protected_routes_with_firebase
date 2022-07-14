@@ -1,39 +1,355 @@
+<!-- 
+  IDEAS: Break down the course instructions into separate "md" files:
+    1. Introduction/Project Overview and Setup/Installation
+    2. Day 1 - Auth 
+    3. Day 2 - Firestore
+    4. Day 3 - Firestore Rules/Authorization
+    5. Day 4 - ????
+ -->
+# Cars App - Project Instructions
+
+## Overview
+
+<!-- 
+  TODO: Add an Overview 
+  (What, Why, How? What will be the final outcome?) 
+-->
+
 ## Setup
 
-- First Look at the firebase-config file and notice we are grabbing the environment variables. Use your FireBase credentials from the .`env` file you made from pre-class and put it in the root directory on the same level as your package.json.
+<!-- TODO: Fork and Clone Repo, npm install -->
+1. Fork and Clone this repo.
 
-- Clone this repo and run `npm i` and then `npm start`
+2. In the main directory of this project, run `npm install` in your terminal.
+
+3. Run `npm start` to see the React project on a live server.
+
+### Firebase Configuration and .env
+
+Let's first take a look at the "firebase-config" file in the main directory of the project. Notice that we are grabbing environment variables that should be coming from a ".env" file. You prepared a ".env" file in the pre-class assignment and you will be using that exact same file for this project, as it has the same credentials we will be using for this project. 
+
+1. Copy the ".env" file from pre-class and paste it into the **main directory** of our new "Cars" project.
+
+2. OR create a new ".env" file in the main directory and provide it the credentials from your Firebase console. 
+
+![firebase-config](./img/firebase-config.png)
+![env](./img/env.png)
+>NOTE: The variable names in the ".env" file must match what you see inside the in the "firebase-config" file. If not, make sure that they are matching in order for this to work.
 
 ## Day 1 - Class 8 Project Instructions 
 
-- We have a functioning FireBase sign up component and are adding a FireBase login page and protected routes to the FakeCars.com application. Once complete, you will be able to login to the app and remain logged in on page refresh and limit page access when logged out.
+<!-- TODO: Add an Overview (What, Why, How? What will be the final outcome?) -->
+We have a functioning FireBase sign up component and are adding a FireBase login page and protected routes to the FakeCars.com application. Once complete, you will be able to login to the app and remain logged in on page refresh and limit page access when logged out.
 
-- You should see a sign up button on the top-right when the app first starts. Go ahead and navigate to it proceed to Sign up a new user. Notice that it takes you to the home page. Now open the console and look at the "auth.currentUser" in the console. You should see an object with the user information indicating our account creation was successful.  
+### Firebase Auth Configuration
 
-- Next click the logout button and refresh the page. You will notice the "auth.currentUser" is `null` and a login button has appeared in the top right. Currently our sign up and logout work but, it is not dynamic and the login page does not connect to FireBase.  
+Let' initialize our "Auth" instance in our project inside our "firebase-config" file.
 
-- Now we need to know when the user is logged in or out. Go to `App.js` and `import {  onAuthStateChanged } from 'firebase/auth'` Write a `useEffect` hook for `onAuthStateChanged` and save the results in state under the appropriate comment.(don't forget all the needed imports). 
+1. At the top level, `import { getAuth } from "firebase/auth"`
 
-- Pass the state from `onAuthStateChanged` as a prop to the `<Navigation  user={user} />` component. Look at the logout/login conditional render in `Navigation.js` and change the correct code with your passed in prop to render logout/login. What happens?
+2. Near the bottom, create a variable that stores the Firebase Auth instance we will export and use throughout our app. We will pass in our "app" instance that is connected to your account. `export const auth = getAuth(app);`
 
-- But does our app know we are ever logged in or out? Click on the "Home" and "About" links on the navigation bar. It looks like we can still access everything when logged out. 
+We can now make queries to your Firebase Auth instance in the components where we will need to import it and use it as a reference. The functions we will import from "firebase/auth" will need to reference our Auth instance as the first argument.
 
-- In the `Router.js` file we can see a list of all our routes and paths. Under the appropriate comment Write a `ProtectedRoute` component checking for the FireBase `user` that will be passed down from the `App` component.
+### SignUp
 
-- Replace all the element properties in our `Route` components (inside of `Routes`) with `<ProtectedRoute />` EXCEPT for the "/login" and "/signUp" route. We always want to be able to access so leave them alone.
 
-- Don't forget to also add the component to the `<ProtectedRoute />` element in which the Route should render. For example, if the route is "/about", we would want to pass our "About" component in the component property:`<ProtectedRoute component={ About }/>`
+First thing we will do is sign up a new user. By now, you should have had a chance to see how the project runs on a live server. Navigate to the "Sign Up" page and you should see a form that is ready to use. The form has inputs that requires an email and a password before being submitted. Type in an email and password, then click the "Sign Up" button. You should see a console log with the current "registerEmail" and "registerPassword", then you will be *navigated* to "Home" page.
 
-- Upon making the changes to the `Route` component you should notice that you can no longer access any of the links in the navigation bar when logged out. They send you back to the login page because there is no Access to FireBase authentication. You need to make sure to let the router know the `user` state.
+Take a look at the "SignUp" component and make sure you understand how everything is working and is connected. We are using code you should already be familiar with. We are using the `useNavigate` hook from "react-router-dom" and we have already included some `useState` variables to store the *state* of the email and password.
 
-- Go back to `App.js` and Pass the resulting state as a prop called `user` to the `<Router  user={user}/>` component. Then pass it to your `<ProtectedRoute user={user} component={ About }/>`
+The form has a `onSubmit` event handler that points to a `signUp` function. This is where we will make a request to create a new user with provided email and password. We, of course, need to start by importing the required functions from the "firebase/auth" library and our "auth" instance from the "firebase-config" file.
 
-- Notice you can now login and access the pages appropriately.  Refresh the page. Were you directed back to the login page?
+1. At the top level, `import { auth } from "../firebase-config"`
 
-- Currently we can sign up new users and logout but, we want to be able to log back in. Go to the `Login` component (under `src/components/Login.js`) and look at the login function. There is a comment to fill out the login function.
+2. At the top level, `import { createUserWithEmailAndPassword } from "firebase/auth"`
 
+3. Now that we have the function we need, inside the "signUp" function, writer the code to create a new user with the email and password coming from the inputs.
+
+4. Make sure to turn the "signUp" function to an asynchronous function by using async/await methods. Also use a try/catch block to catch any unexpected errors that may occur during the query.
+
+```javascript
+const signUp = async (e) => {
+    e.preventDefault();
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        registerEmail,
+        registerPassword
+      );
+      console.log("userCredential.user", userCredential.user);
+      navigate("/");
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+```
+
+5. The "createUserWithEmail" function returns something, so make sure you save the result from this asynchronous function into a variable. You can console log that variable to see the object that is returned. We will need to use this later set our current "user" *state* that will keep track if someone is logged in.
+
+If the function is successful, Firebase Auth will save the users credentials of into local memory, the indexedDB. We now have access to that object by using other functions from "firebase/auth". This will help the app keep track if someone is currently logged in.
+
+### GetAuth
+
+So we have just signed up a new user, and we know that after we signed up, the users credentials, or the current user logged in object, is stored in the memory of our web application. We cannot really do anything with it at the moment because we have to use another Firebase Auth function to extract that user object from that local memory, the *indexedDB*.
+
+We are going to be using `{onAuthStateChanged}` from `firebase/auth` Let's begin at the "App.js" component.
+
+1. At the top level, `import { onAuthStateChanged } from "firebase/auth"`
+
+2. At the top level, `import { auth } from "./firebase-config"`
+
+3. We are also going to be using some React Hooks. At the top level, `import { useEffect, useState } from "react"`
+
+4. Let's start by setting some *state* to keep track of a user if they are logged in. The initial state for this *state* will be null. We are going to use the `onAuthStateChanged` function to check for any current logged in user, otherwise it will stay null.
+
+5. Create a `useEffect` hook where we will be using our `onAuthStateChanged` function inside of. `onAuthStateChanged` will return something to us, so make sure you assign a variable to the result of this function call. This function will take two parameters, the first is of course our "Auth" instance, the second will be a call back that will return that user object that is stored in the *indexedDb* memory. Make sure to console log the "currentUser". We will also set *state* to that of the user object: `setUser(currentUser)`.
+
+6. Inside the `onAuthStateChanged` callback, after setting the user *state*, we want to call that variable we assigned to this function call. In previous lessons, we named this variable `unsub` because what is returned by that `onAuthStateChanged` function is a *unsubscribing* function that allows us to stop the `onAuthStateChanged` function from constantly monitoring our app for any other auth state changes. Make sure to invoke the variable/function: `unsub()`. 
+
+```javascript
+const [user, setUser] = useState(null)
+
+useEffect(()=>{
+  const unsub = onAuthStateChanged(auth, (currentUser) => {
+    console.log("Current User: ", currentUser);
+    setUser(currentUser)
+    unsub()
+  });
+},[])
+```
+
+6. Whenever you refresh your page, this useEffect will run our `onAuthStateChanged`, and if there is a user object stored in the *indexedDB*, it will set our user *state* to that object of the the current user logged in.
+  
+  >Note: This useEffect will run only once when the app loads. `onAuthStateChanged` should stop monitoring for any other auth state changes since we will take care of that ourselves. This is just to check if there is currently a logged in user at start. 
+
+We now have a way to keep track if someone is logged in at the moment our App loads. Like mentioned before, if someone has signed up, the "user" object of that person that signed up will be stored in *indexedDb*. It will stay in there until we delete it manually, or use another function from Firebase called `signOut`.
+
+### SignOut
+
+So now our app knows how to check if someone is currently logged in by checking the local memories *indexedDB*. Let's create a way to log that someone out by clicking the "Logout" button inside our "Navigation" component.
+
+Let's start by looking at our "Navigation" component.
+
+1. At the top level, `import { signOut } from "firebase/auth"`
+
+2. Don't forget to `import { auth } from "./firebase-config"` at the top level.
+
+3. Look for the "li" in within the component that has our "Logout" text. We are going to add an "onClick" property and pass in our `signOut` function for that event. We will have to pass in our "auth" instance to this `signOut` function so this onClick will have to be an *anonymous* function, or empty function. It should look like this:
+
+```javascript
+<li
+  className="nav-list-item"
+  onClick={async() => {
+    await signOut(auth);
+  }}
+>
+  Logout
+</li>
+  ```
+  >Note: This will also be an asynchronous function call, so `await` the results.
+
+4. Now when we refresh the page, we should see that the current is now `null`. That means we have successfully logged out.
+
+5. We don't want to have to refresh the page every time, that is not practical, so lets pass our user *state* from "App.js" over to our "Navigation" component. We are going to pass both the "user" *state* and the "setUser" function that sets our state. We will currently only use "setState" but will later use the "user" state when we talk about conditional rendering later in this section.
+
+```javascript
+// Inside App.js
+<Navigation user={user} setUser={setUser} />
+```
+6. Now that we have a way to set our "user" *state* in our navigation component, we want to set that *state* to null right after the `signOut(auth)` function: `props.setUser(null)`. Don't forget to pass in props to our "Navigation" component.
+
+7. We also want to use `useNavigate` from `react-router-dom` to navigate our user to the "/login" page or maybe just "/" Home page.
+
+```javascript
+<li
+  className="nav-list-item"
+  onClick={async() => {
+    await signOut(auth);
+    props.setUser(null)
+    navigate('/login')
+  }}
+>
+  Logout
+</li>
+  ```
+So we are now logging out our current user and also setting the "user" *state* of our app to `null` when that function is successful. Setting the user to `null` will be important when we want to render something conditionally, like our "Login" and "Logout" buttons or when we set up our "Protected" routes component.
+
+### Login
+
+We have successfully signed someone up, which also logs the user in, and we can also log that user out. We now need a way to log someone in if they have already signed up.
+
+Let's start at the "Login" component. We currently have a form setup with a `onSubmit` event that points to a `login` function. Make sure you take a look at the form and understand how it is working before we move on.
+
+
+1. At the top level, `import { signInWithEmailAndPassword } from "firebase/auth"`
+
+2. Don't forget to `import { auth } from "./firebase-config"` at the top level.
+
+3. Inside the `login` function, make a request to Firebase Auth to log someone in using the "loginEmail" and "loginPassword" they have entered. Just as the Firebase Auth function explicitly says, `signInWithEmailAndPassword`, we are going to provide the function with both the email and password. This function takes in 3 parameters, the first one being "auth", followed by the "email", then the "password". Makes sure to turn the `login` function to an asynchronous function and await the results of this `signInWithEmailAndPassword` function. Just like before, we also want to save the results of this function to a variable which we can then use. The result will be that same "user" object that is stored inside the local memories *indexedDb*.
+```javascript
+const login = async(e) => {
+  e.preventDefault();
+  let currentUser = await signInWithEmailAndPassword(auth, loginEmail, loginPassword)
+  console.log(currentUser)
+  navigate("/");
+};
+```
+
+4. Although our memory knows of our currently logged in user, our app is still unaware. We need to pass the "setUser" function from the `useState` hook as props to this "Login" component. But the "Login" component is inside our "Router.js" component. We will have to drill our props into our "Router" component, then into our "Login" component. Begin at "App.js". Pass the `setUser` function as a prop to the "Router" component. Next, let's go to the "Router" component. We need to pass props to this component then pass those props again to our "Login" component. 
+
+```javascript
+// Inside App.js
+<Router user={user} setUser={setUser} />
+
+// Inside Router.js
+<Route path="/login" element={<Login setUser={props.setUser} />} />
+```
+
+5. We should now have access to the props we passed down to the "Login" component from the "App" component by drilling the props down to it. Make sure to pass props as the parameter in the "Login" component and lets use that `setUser` component to save the results of our `signInWithEmailAndPassword`, which is our user object: `setUser(currentUser)`.
+
+```javascript
+const login = async(e) => {
+  e.preventDefault();
+  let currentUser = await signInWithEmailAndPassword(auth, loginEmail, loginPassword)
+  console.log(currentUser)
+  props.setUser(currentUser)
+  navigate("/");
+};
+```
+
+6. The `useNavigate` was already prepared for us in this component and should be the last thing to happen in this `login` function. Once a user has logged in successfully, they will be navigated to the "Home" component.
+
+Awesome! We have now completed all the Authentication stuff surrounding our app and it should work pretty smooth now. We still have bits and pieces to implement, such as conditional rendering and our Protected Routes, we will cover that next.
+
+If something is not working properly, go through the assignment again and make sure everything is correct.
+
+### Conditional Rendering
+
+So we can now keep track of any current user logged in to our app and we have *state* holding the value of that current user. We want to be able to conditionally render certain elements in our page based on whether someone is logged in our not.
+
+For instance, our "Login", "Sign Up", and "Logout" buttons are all being displayed at the same time. We want this conditionally render the proper buttons whether someone is logged in or not. If someone is logged in, we should only see a "Logout" button among those three buttons mentioned. If some one is not logged in, than we want to be able to only see the option to either "Sign Up" or "Login", of those three buttons mentioned.
+
+We will go into the "Navigation" component to set these conditional statements. Luckily for us, we should have already passed the "user* props to this component. Remember, the "user" props either has a user object of the current user logged in, or it is `null`, signifying that someone is logged in if the *state* has a user object or logged out if the *state* is `null`.
+
+Inside the "Navigation" component:
+
+1. We should already be passing in props, so lets use the "user" props which holds the *state* of the current user. Let's user a *ternary operator* to render only the "logout" button if *state* has a user object, otherwise, we want to render both the "Login" and "Sign Up" button if it is `null`.
+
+```javascript
+// Inside the "Navigation" component
+{props.user ? (
+  <li
+    className="nav-list-item"
+    onClick={async () => {
+      await signOut(auth);
+      props.setUser(null);
+      navigate("/login");
+    }}
+  >
+    Logout
+  </li>
+) : (
+  <>
+    <li className="nav-list-item">
+      <Link to="/signup">Sign Up</Link>
+    </li>
+    <li className="nav-list-item">
+      <Link to="/login">Login</Link>
+    </li>
+  </>
+)}
+```
+
+2. Remember, if we are trying to return two JSX elements at once, we need to wrap that in one parent container since React expects only one Element to be returned at a time. In this case, I am using a fragment as the parent element to wrap both the "Login" and "Sign Up" button.
+
+3. Test to make sure it works. When you login, the Navigation should change to reflect the "user" *state*. It should change again when you logout, as well.
+
+Great job! Let's move on to protecting some routes using similar logic to allow access to a page only if a user is logged in.
+
+### Protected Routes
+
+We covered ProtectedRoutes in the pre-class, and we will be using that same logic in this code. Make sure you understand how that works and let's implement that functionality in our App. We will be protecting two routes, the "Dashboard" page and the "About" page. 
+
+1. We will begin by creating a new component called "ProtectedRoutes.js".
+
+2. The component will look just like the pre-class assignment:
+```javascript
+import React from "react";
+import { Navigate } from "react-router";
+
+const ProtectedRoutes = (props) => {
+  const { component: Component, user, ...rest } = props;
+
+  return (
+    <>
+      {user ? (
+        <Component />
+      ) : (
+        <Navigate to="/login" />
+      )}
+    </>
+  );
+};
+
+export default ProtectedRoutes;
+```
+>NOTE: If you are confused at how this looks, please look at the pre-class assignment where there is a descriptive explanation on what is going on in this component.
+
+3. Lets import our "ProtectedRoute" component inside out "Router" component so that we can use it to protect certain routes. 
+
+4. Inside the `<Route />` that renders our "Dashboard" component, we will instead pass in our "ProtectedRoute" component and pass the "Dashboard" component as a prop inside the "ProtectedRoute" component.
+
+5. You will also need to pass the "user" *state* coming from props to the "ProtectedRoute" component so that we can use it to conditionally in the case that someone is logged in or not. If someone is logged in, it will render the component that we passed along, but if they are not logged in, they will navigated to the "/login" page. We are use `{Navigate}` from `react-router-dom` to navigate our user.
+>NOTE: `{useNavigate}` and `{Navigate}` are two different things both from `react-router-dom`. `useNavigate` is a hook we can use inside our code to navigate someone, where `Navigate` is a component, which takes a `to="/"` attribute, called inside of the `return` of the current component. They work similar but have different usability.
+
+6. We want to do the same thing for the "About" route. The routes should look like this:
+```javascript
+<Route
+  path="/dashboard"
+  element={<ProtectedRoutes user={props.user} component={Dashboard} />}
+/>
+<Route
+  path="/about"
+  element={<ProtectedRoutes user={props.user} component={About} />}
+/>
+```
+
+We now have some protected routes that only allows access to users that are currently logged in to our App. Awesome!
+
+### Almost forgot!
+When the user signs up, our App *state* has no idea of our current user, it is only stored in local memory. Remember we have access to the "userCredential" after we sign them up, and we said we would be using this to let our app *state* know that we also logged this user in. Just like we have been passing the "user" *state* and the "setUser" function around to other components, we also want to pass this "setUser" function to the "SignUp" component. We are already passing it to out Router, which has access to all out other components, so lets also pass "setUser" to the "SignUp" component inside the "Router" component.
+
+Inside "Router.js":
+1. Pass the `setUser` function to the "SignUp" component.
+
+2. Inside the "SignUp" component, be sure to pass in props to this component.
+
+3. Inside your `signUp` function, use the `setUser` props to the result of the `createUserWithEmailAndPassword` function. It should look like this:
+
+```javascript
+const signUp = async (e) => {
+    e.preventDefault();
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        registerEmail,
+        registerPassword
+      );
+      console.log("userCredential.user", userCredential.user);
+      props.setUser(userCredential)
+      navigate("/");
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+```
+
+Our app authentication is now smoothly operating. Make sure the functionality of you app is working properly.
 
 ## Day 2 - Class 9 Project Instructions 
+
+### Overview
 
 At this point, we have already implemented Firebase Auth to our project and can keep track if someone is logged in or not. By knowing if someone is logged in, we are able to provide to them web pages that would otherwise be denied. Along with that, we also want to restrict the ability to do certain actions, such as create or update data. We setup these ProtectedRoutes in the previous section, and only if we are logged in, should we be able to access the "Dashboard". 
 

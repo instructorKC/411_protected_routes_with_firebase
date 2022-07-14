@@ -1,26 +1,22 @@
 import React, { useState } from "react";
+// Import { auth } instance here
+// Import { signInWithEmailAndPassword } function here
 import { useNavigate } from "react-router-dom";
+
 import { TextField, Button, Container } from "@mui/material";
 
-import { auth } from "../firebase-config";
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-} from "firebase/auth";
-
+// Make sure to pass in props as the parameter to access properties being passed to this component.
 const Login = () => {
   const navigate = useNavigate();
+
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
 
+  // Make function asynchronous using async/await methods
   const login = (e) => {
     e.preventDefault();
-    // use the FireBase Documentation to implement login function
-    // it is very similar to the signUp code.
-    // https://firebase.google.com/docs/auth/web/password-auth
-    // find the signInWithEmailAndPassword function
-    // the documentation uses .then() promise chaining and we have been using async/await either one is valid and will work
+    // Use the "signInWithEmailAndPassword" function here
+    // Don't forget to use a try/catch block
 
     navigate("/");
   };
