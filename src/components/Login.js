@@ -1,18 +1,20 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TextField, Button, Container } from "@mui/material";
-
-import { auth } from "../firebase-config";
 import {
+  getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
 
+import { auth } from "../firebase-config";
+
 const Login = () => {
   const navigate = useNavigate();
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
+  const auth = getAuth();
 
   const login = (e) => {
     e.preventDefault();
@@ -21,6 +23,17 @@ const Login = () => {
     // https://firebase.google.com/docs/auth/web/password-auth
     // find the signInWithEmailAndPassword function
     // the documentation uses .then() promise chaining and we have been using async/await either one is valid and will work
+    signInWithEmailAndPassword(auth, loginEmail, loginPassword)
+      .then((userCredential) => {
+        // Signed in
+        const user = userCredential.user;
+        console.log("user", user);
+        // ...
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+      });
 
     navigate("/");
   };
