@@ -14,7 +14,7 @@ function App() {
 
   //Class 9: Create a useState hook to store the data we Read from Firestore
   // const [carsData, setCarsData] =
-
+  const [carsData, setCarsData] = useState();
   //Class 8: Write a useEffect hook for onAuthStateChanged and set the user state.
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
