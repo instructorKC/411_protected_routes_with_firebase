@@ -32,7 +32,7 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Navigation />
+      <Navigation user={user} />
       <Router user={user} />
     </BrowserRouter>
   );

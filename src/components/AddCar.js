@@ -15,7 +15,7 @@ import {
 } from "@mui/material";
 
 export default function AddCar(props) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false);  //useState is a hook that you use to set your state 
   const [car, setCar] = useState({
     id: "",
     name: "",
@@ -67,7 +67,7 @@ export default function AddCar(props) {
 
   return (
     <>
-      <Button variant="contained" onClick={handleClickOpen}>
+      <Button variant="contained" onClick={handleClickOpen}>  
         Add Car
       </Button>
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="xs">

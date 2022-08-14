@@ -1,17 +1,17 @@
 import React, { Component } from "react";
 import { Container, Divider, Switch } from "@mui/material";
 
-class About extends Component {
+class About extends Component { 
   state = {
     checked: true,
     heading: "About FakeCars.com",
   };
 
   toggleSwitch = () => {
-    const newVal = !this.state.checked;
+    const newVal = !this.state.checked;  //newVal is false
     if (newVal) {
       return this.setState({
-        heading: "About FakeCars.com",
+        heading: "About FakeCars.com", 
         checked: newVal,
       });
     }
